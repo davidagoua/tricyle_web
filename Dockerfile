@@ -1,0 +1,18 @@
+
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm install
+
+RUN npm run build
+
+
+FROM caddy:alpine
+
+COPY --from=build /app/.output/public /usr/share/caddy
+
+
+COPY Caddyfile /etc/caddy/Caddyfile
