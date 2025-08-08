@@ -1,4 +1,6 @@
 :80
 
-file_server /usr/share/cadd browse
+root * /usr/share/caddy
+
+file_server  
 log
