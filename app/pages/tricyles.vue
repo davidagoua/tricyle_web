@@ -1,5 +1,8 @@
 <script setup lang="ts">
 
+import { useQRCode } from '@vueuse/integrations/useQRCode'
+
+
 const pb = usePocketbase();
 const toast = useToast()
 const openModal = ref(false)
@@ -39,11 +42,11 @@ const fetchData = async () => {
 
 
 const newCar = ref({
-  "nom": "test",
-  "type": "test",
-  "matricule": "test",
-  "contact": "test",
-  "user": "test",
+  "nom": "",
+  "type": "",
+  "matricule": "",
+  "contact": "",
+  "user": "",
   "actif": true
 })
 const createTricyle = async () => {
@@ -63,6 +66,15 @@ const createTricyle = async () => {
     emit('close', true)
   }
 }
+
+const downloadQRCode = async (tricyle) => {
+  const qrCodeBase64 = useQRCode(tricyle.id)
+  const { jsPDF } = await import('jspdf')
+
+  const pdf = new jsPDF()
+  pdf.addImage(qrCodeBase64.value, 'PNG', 10, 20, 50, 50)
+  pdf.save(`${tricyle.name}_qrcode.pdf`)
+}
 </script>
 
 <template>
@@ -76,7 +88,7 @@ const createTricyle = async () => {
 
         <template #content>
           <div class="p-3">
-            <form @submit.prevent="createTricyle">
+            <form @submit.prevent="createTricyle" class="grid grid-cols-1 gap-x-2 md:grid-cols-2 gap-3">
               <div class="mb-3">
                 <label for="">Nom</label><br>
                 <UInput v-model="newCar.nom" />
@@ -85,9 +97,9 @@ const createTricyle = async () => {
                 <label for="">Contact</label><br>
                 <UInput class="w-full" v-model="newCar.contact" />
               </div>
-              <div class="mb-3">
+              <div class="mb-3 col-span-2">
                 <label for="">Matricule</label><br>
-                <UInput v-model="newCar.matricule" />
+                <UInput v-model="newCar.matricule" class=" w-full" />
               </div>
               <UButton type="submit">Enregistrer</UButton>
             </form>
@@ -96,25 +108,28 @@ const createTricyle = async () => {
       </UModal>
     </div>
     <div class="w-full p-3 bg-white ">
-      <table class="w-full table-auto">
+      <table class="w-full table table-auto">
 
         <tr class="text-left">
-          <th>Id</th>
-          <th>Matricule</th>
-          <th>Contact</th>
-          <th>Proprio</th>
-          <th>Actions</th>
+          <th class="p-3">Id</th>
+          <th class="p-3">Matricule</th>
+          <th class="p-3">Contact</th>
+          <th class="p-3">Proprio</th>
+          <th class="p-3">Actions</th>
         </tr>
         <tr v-show="loading">
           <td colspan="5">
             <UProgress/>
           </td>
         </tr>
-        <tr v-for="tricyle in tricyles" :key="tricyle.id" class="text-left p-3">
-          <td>{{ tricyle.id }}</td>
-          <td>{{ tricyle.matricule}}</td>
-          <td>{{ tricyle.contact}}</td>
-          <td>{{ tricyle.user}}</td>
+        <tr v-for="tricyle in tricyles" :key="tricyle.id" class="text-left m-3 p-3">
+          <td class="p-3">{{ tricyle.id }}</td>
+          <td class="p-3">{{ tricyle.matricule}}</td>
+          <td class="p-3">{{ tricyle.contact}}</td>
+          <td class="p-3">{{ tricyle.user}}</td>
+          <td class="p-3">
+            <UButton @click="downloadQRCode(tricyle)"><UIcon name="i-lucide-qr-code"/></UButton>
+          </td>
         </tr>
       </table>
     </div>

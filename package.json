@@ -16,8 +16,12 @@
     "@iconify-json/simple-icons": "^1.2.44",
     "@nuxt/icon": "^1.15.0",
     "@nuxt/ui": "^3.2.0",
+    "@vueuse/core": "^13.6.0",
+    "@vueuse/integrations": "^13.6.0",
+    "jspdf": "^3.0.1",
     "nuxt": "^4.0.1",
-    "pocketbase": "^0.26.2"
+    "pocketbase": "^0.26.2",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.6.0",
