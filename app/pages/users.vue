@@ -5,14 +5,76 @@ const pb = usePocketbase()
 const users = ref([])
 
 onMounted(async()=>{
-  users.value = await pb.collection('users').getFullList();
+  await fetchUsers()
   console.log(users.value)
 })
+
+const fetchUsers = async () => {
+  users.value = await pb.collection('users').getFullList();
+}
+
+const newUser = ref({
+    "email": "",
+    "emailVisibility": true,
+    "name": "",
+    "role": "agent",
+    "password": "",
+})
+const createUser = async() => {
+  newUser.value.email = users.value.email+"@mail.com"
+  newUser.value.passwordConfirm = newUser.value.password
+  await pb.collection('users').create(newUser.value)
+  await fetchUsers()
+}
+const openModal = ref(false)
 </script>
 
 <template>
 <NuxtLayout>
-  <h2 class="text-2xl font-bold">Liste des utilisateurs</h2>
+  <div class="flex justify-between items-center mb-3">
+    <h2 class="text-2xl font-bold">Liste des utilisateurs</h2>
+    <UModal v-model:open="openModal" >
+      <UButton label="Ajouter" color="neutral" variant="subtle" />
+
+      <template #content>
+        <div class="p-3 ">
+          <form @submit.prevent="createUser" class="grid grid-cols-1 gap-x-2 md:grid-cols-2 gap-3">
+            <div class="mb-3">
+              <label for="">Pseudo</label><br>
+              <UInput v-model="newUser.email" type="text" name="email" placeholder="Pseudo" />
+            </div>
+            <div class="mb-3">
+              <label for="">Nom</label><br>
+              <UInput class="w-full" v-model="newUser.name" type="text" name="name" placeholder="Nom" />
+            </div>
+            <div class="mb-3 col-span-2">
+              <label for="">Mot de passe</label><br>
+              <UInput v-model="newUser.password" class=" w-full" type="password" name="password" placeholder="Mot de passe" />
+            </div>
+            <UButton type="submit">Enregistrer</UButton>
+          </form>
+        </div>
+      </template>
+    </UModal>
+  </div>
+  <div>
+    <div class="grid bg-gray-300 p-3 grid-cols-5 mb-4 gap-4">
+      <div>ID</div>
+      <div>EMAIL</div>
+      <div>NOM</div>
+      <div>ROLE</div>
+    </div>
+    <div v-for="user in users" :key="user.id"  class="grid hover:bg-gray-50 grid-cols-5 p-3 gap-4">
+      <div>{{user.id}}</div>
+      <div>{{user.email}}</div>
+      <div>{{user.name}}</div>
+      <div>{{user.role}}</div>
+      <div>
+        <UButton label="Modifier" color="neutral" variant="subtle" />
+        <UButton label="Supprimer" color="error"  />
+      </div>
+    </div>
+  </div>
 </NuxtLayout>
 </template>
 

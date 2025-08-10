@@ -13,7 +13,7 @@ onMounted(async()=>{
 <div class="">
   <div class="flex container space-x-5">
     <div class="bg-[#192a56] h-screen overflow-y-scroll min-w-[210px]">
-      <MainMenu/>
+      <MainMenu class="w-full" />
     </div>
     <div class="mt-5 w-10/12">
       <slot/>
