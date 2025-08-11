@@ -19,12 +19,14 @@ const newUser = ref({
     "name": "",
     "role": "agent",
     "password": "",
+    "pseudo": "",
 })
 const createUser = async() => {
-  newUser.value.email = users.value.email+"@mail.com"
+  newUser.value.email = newUser.value.pseudo+"@mail.com"
   newUser.value.passwordConfirm = newUser.value.password
   await pb.collection('users').create(newUser.value)
   await fetchUsers()
+  openModal.value = false
 }
 const openModal = ref(false)
 </script>
@@ -41,7 +43,7 @@ const openModal = ref(false)
           <form @submit.prevent="createUser" class="grid grid-cols-1 gap-x-2 md:grid-cols-2 gap-3">
             <div class="mb-3">
               <label for="">Pseudo</label><br>
-              <UInput v-model="newUser.email" type="text" name="email" placeholder="Pseudo" />
+              <UInput v-model="newUser.pseudo" type="text" name="email" placeholder="Pseudo" />
             </div>
             <div class="mb-3">
               <label for="">Nom</label><br>

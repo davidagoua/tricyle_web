@@ -72,7 +72,7 @@ const downloadQRCode = async (tricyle) => {
   const { jsPDF } = await import('jspdf')
 
   const pdf = new jsPDF()
-  pdf.addImage(qrCodeBase64.value, 'PNG', 10, 20, 50, 50)
+  pdf.addImage(qrCodeBase64.value, 'PNG', 10, 20, 100, 100)
   pdf.save(`${tricyle.name}_qrcode.pdf`)
 }
 </script>
@@ -122,13 +122,17 @@ const downloadQRCode = async (tricyle) => {
             <UProgress/>
           </td>
         </tr>
-        <tr v-for="tricyle in tricyles" :key="tricyle.id" class="text-left m-3 p-3">
-          <td class="p-3">{{ tricyle.id }}</td>
-          <td class="p-3">{{ tricyle.matricule}}</td>
-          <td class="p-3">{{ tricyle.contact}}</td>
-          <td class="p-3">{{ tricyle.user}}</td>
-          <td class="p-3">
-            <UButton @click="downloadQRCode(tricyle)"><UIcon name="i-lucide-qr-code"/></UButton>
+        <tr v-for="tricycle in tricyles" :key="tricycle.id" class="text-left m-3 p-3">
+          <td class="p-3">{{ tricycle.id }}</td>
+          <td class="p-3">{{ tricycle.matricule}}</td>
+          <td class="p-3">{{ tricycle.contact}}</td>
+          <td class="p-3">{{ tricycle.user}}</td>
+          <td class="p-3 items-center space-x-3">
+            <UButton @click="downloadQRCode(tricycle)"><UIcon name="i-lucide-qr-code"/></UButton>
+            <DetailsPayment :tricycle />
+            <UButton color="error">
+              <UIcon name="i-lucide-trash"/>
+            </UButton>
           </td>
         </tr>
       </table>

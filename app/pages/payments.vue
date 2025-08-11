@@ -12,7 +12,7 @@ const onpenAddModal = ref(false)
 
 onMounted(async()=>{
   payments.value = await pb.collection('payments').getFullList({
-    expand: 'user.name',
+    expand: 'user.name,car.matricule',
   });
   console.log(payments);
   pb.collection('payments').subscribe('*', function (e) {
@@ -42,42 +42,47 @@ const withdraw = async(payment) => {
 
 <template>
 <NuxtLayout>
-  <div class="card shadow">
-    <div class="flex justify-between p-3 bg-white">
-      <h2 class="text-2xl">Liste de paiements</h2>
-      <UModal >
-        <UButton label="Ajouter" color="neutral" variant="subtle" />
-
-        <template #content>
-
-        </template>
-      </UModal>
+  <div class="flex space-x-3">
+    <div class="card shadow w-4/12">
+      <ScanList/>
     </div>
-    <div class="w-full p-3 bg-white ">
-      <div>
-        <div class="grid bg-gray-300 p-3 grid-cols-6 mb-4 gap-4">
-          <div>Montant</div>
-          <div>Agent</div>
-          <div>Date</div>
-          <div>Semaine</div>
-          <div>Encaissé</div>
-          <div>Actions</div>
-        </div>
-        <div v-for="payment in paymentsFIltered" :key="payment.id" class="grid hover:bg-gray-50 grid-cols-6 p-3 gap-4">
-          <div>{{payment.amount}} FCFA</div>
-          <div>{{payment.name}}</div>
-          <div class="text-sm">{{payment.created}}</div>
-          <div>{{payment.numero_semaine}}</div>
-          <div>
-            <UBadge v-if="payment.withdrawed" >
-              <UIcon name="i-lucide-check" />
-            </UBadge>
-            <UBadge v-else  color="neutral" >
-              <UIcon name="i-lucide-clock-3"/>
-            </UBadge>
+    <div class="card shadow">
+      <div class="flex justify-between p-3 bg-white">
+        <h2 class="text-2xl">Liste de paiements</h2>
+        <UModal >
+          <UButton label="Ajouter" color="neutral" variant="subtle" />
+
+          <template #content>
+
+          </template>
+        </UModal>
+      </div>
+      <div class="w-full p-3 bg-white ">
+        <div>
+          <div class="grid bg-gray-300 p-3 grid-cols-6 mb-4 gap-4">
+            <div>Montant</div>
+            <div>Agent</div>
+            <div>Date</div>
+            <div>Semaine</div>
+            <div>Encaissé</div>
+            <div>Actions</div>
           </div>
-          <div>
-            <UButton v-if="!payment.withdrawed" @click="withdraw(payment)" label="Encaisser" color="neutral" variant="subtle" />
+          <div v-for="payment in paymentsFIltered" :key="payment.id" class="grid hover:bg-gray-50 grid-cols-6 p-3 gap-4">
+            <div>{{payment.amount}} FCFA</div>
+            <div>{{payment.name}}</div>
+            <div class="text-sm">{{payment.created}}</div>
+            <div>{{payment.numero_semaine}}</div>
+            <div>
+              <UBadge v-if="payment.withdrawed" >
+                <UIcon name="i-lucide-check" />
+              </UBadge>
+              <UBadge v-else  color="neutral" >
+                <UIcon name="i-lucide-clock-3"/>
+              </UBadge>
+            </div>
+            <div>
+              <UButton v-if="!payment.withdrawed" @click="withdraw(payment)" label="Encaisser" color="neutral" variant="subtle" />
+            </div>
           </div>
         </div>
       </div>
