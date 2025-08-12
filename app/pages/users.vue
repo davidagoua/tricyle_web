@@ -43,7 +43,7 @@ const openModal = ref(false)
           <form @submit.prevent="createUser" class="grid grid-cols-1 gap-x-2 md:grid-cols-2 gap-3">
             <div class="mb-3">
               <label for="">Pseudo</label><br>
-              <UInput v-model="newUser.pseudo" type="text" name="email" placeholder="Pseudo" />
+              <UInput v-model="newUser.pseudo" type="text" name="pseudo" placeholder="Pseudo" />
             </div>
             <div class="mb-3">
               <label for="">Nom</label><br>
