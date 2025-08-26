@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 const pb = usePocketbase()
-
+const toast = useToast()
 const users = ref([])
 
 onMounted(async()=>{
@@ -28,7 +28,17 @@ const createUser = async() => {
   await fetchUsers()
   openModal.value = false
 }
+const showPassword = ref(false)
 const openModal = ref(false)
+
+const deleteUser = async(userId: string) => {
+  await pb.collection('users').delete(userId)
+  await fetchUsers()
+  toast.add({
+    title: 'Success',
+    description: 'Utilisateur supprimé',
+  })
+}
 </script>
 
 <template>
@@ -51,7 +61,11 @@ const openModal = ref(false)
             </div>
             <div class="mb-3 col-span-2">
               <label for="">Mot de passe</label><br>
-              <UInput v-model="newUser.password" class=" w-full" type="password" name="password" placeholder="Mot de passe" />
+              <UInput :ui="{ trailing: 'pe-1' }" v-model="newUser.password" class=" w-full" :type="showPassword ? 'text' : 'password'" name="password" placeholder="Mot de passe" >
+                <template #trailing>
+                  <UIcon @click="showPassword = ! showPassword" :name=" !showPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"  />
+                </template>
+              </UInput>
             </div>
             <UButton type="submit">Enregistrer</UButton>
           </form>
@@ -73,7 +87,7 @@ const openModal = ref(false)
       <div>{{user.role}}</div>
       <div>
         <UButton label="Modifier" color="neutral" variant="subtle" />
-        <UButton label="Supprimer" color="error"  />
+        <UButton @click="deleteUser(user.id)" label="Supprimer" color="error"  />
       </div>
     </div>
   </div>
