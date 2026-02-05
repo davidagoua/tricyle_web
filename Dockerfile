@@ -12,7 +12,7 @@ RUN npm run generate
 
 FROM caddy:alpine AS deploy
 
-COPY --from=build /app/dist/ /usr/share/caddy
+COPY --from=build /app/.output/public/ /usr/share/caddy
 
 
 COPY Caddyfile /etc/caddy/Caddyfile
