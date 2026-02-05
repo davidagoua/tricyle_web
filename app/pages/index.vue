@@ -5,22 +5,13 @@
 
       <!-- KPIs Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white shadow rounded p-4">
-          <h3 class="text-sm text-gray-500">Tricyles</h3>
-          <p class="text-2xl font-semibold">{{ stats.tricycles }}</p>
-        </div>
-        <div class="bg-white shadow rounded p-4">
-          <h3 class="text-sm text-gray-500">Agents</h3>
-          <p class="text-2xl font-semibold">{{ stats.agents }}</p>
-        </div>
-        <div class="bg-white shadow rounded p-4">
-          <h3 class="text-sm text-gray-500">Paiement</h3>
-          <p class="text-2xl font-semibold">{{ stats.paiements }}</p>
-        </div>
-        <div class="bg-white shadow rounded p-4">
-          <h3 class="text-sm text-gray-500">Montant Total</h3>
-          <p class="text-2xl font-semibold">{{ formatFcfa(stats.totalMontant) }}</p>
-        </div>
+        <DashboardKPICard name="Tricycles" :value="stats.tricycles" />
+
+        <DashboardKPICard name="Agents" :value="stats.agents" />
+        <DashboardKPICard name="Paiements" :value="stats.paiements" />
+        <DashboardKPICard name="Montant Total" :value="formatFcfa(stats.totalMontant)" />
+
+
 
       </div>
 
@@ -30,7 +21,7 @@
           <h2 class="text-lg font-semibold mb-2">Montants par semaine</h2>
           <ul>
             <li v-for="(amount, week) in stats.montantParSemaine" :key="week">
-              <span class="font-medium">Semaine {{ week }} :</span> {{ formatFcfa(amount) }}
+              <span class="font-medium">Semaine {{ week }}-{{ (new Date()).getFullYear()}} :</span> {{ formatFcfa(amount) }}
             </li>
           </ul>
         </div>
@@ -38,7 +29,7 @@
           <h2 class="text-lg font-semibold mb-2">Montants encaissé</h2>
           <ul>
             <li v-for="(amount, week) in stats.montantParSemaine" :key="week">
-              <span class="font-medium">Semaine {{ week }} :</span> {{ formatFcfa(stats.totalMontantwithDrawed) }}
+              <span class="font-medium">Semaine {{ week }}-{{ (new Date()).getFullYear()}} :</span> {{ formatFcfa(stats.totalMontantwithDrawed) }}
             </li>
           </ul>
         </div>
@@ -70,6 +61,7 @@
 import { onMounted, reactive } from 'vue'
 import PocketBase from 'pocketbase'
 import {usePocketbase} from "#imports";
+import DashboardKPICard from "~/components/DashboardKPICard.vue";
 
 // 💡 Remplace par ton URL
 const pb = usePocketbase()

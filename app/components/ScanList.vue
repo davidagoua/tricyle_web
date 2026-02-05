@@ -34,7 +34,8 @@ onMounted(async() => {
     <UIcon class="text-red-500" name="i-lucide-cloud-alert" />
     <div>
       <h2>{{scan.expand.car?.matricule}}</h2>
-      <small class="text-xs text-gray-500">{{ scan.created}}</small>
+      <small class="text-xs text-gray-500">{{ scan.created}}</small> <br>
+      <small class="text-xs text-gray-500">Scanner par: {{ scan.expand.user?.name}}</small>
     </div>
   </div>
 </div>

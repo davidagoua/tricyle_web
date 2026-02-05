@@ -3,6 +3,7 @@
 const pb = usePocketbase()
 const toast = useToast()
 const users = ref([])
+const isEdit = ref(false)
 
 onMounted(async()=>{
   await fetchUsers()
@@ -22,11 +23,24 @@ const newUser = ref({
     "pseudo": "",
 })
 const createUser = async() => {
-  newUser.value.email = newUser.value.pseudo+"@mail.com"
-  newUser.value.passwordConfirm = newUser.value.password
-  await pb.collection('users').create(newUser.value)
-  await fetchUsers()
-  openModal.value = false
+  try{
+    newUser.value.email = newUser.value.pseudo+"@mail.com"
+    newUser.value.passwordConfirm = newUser.value.password
+    await pb.collection('users').create(newUser.value)
+    await fetchUsers()
+    toast.add({
+      title: "Utilisateur crée",
+      description: "Utilisateur crée"
+    })
+    openModal.value = false
+  }catch(error){
+    console.log(error)
+    toast.add({
+      title: "error",
+      color: 'error'
+    })
+  }
+
 }
 const showPassword = ref(false)
 const openModal = ref(false)

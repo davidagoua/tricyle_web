@@ -108,7 +108,7 @@ const downloadQRCode = async (tricyle) => {
       </UModal>
     </div>
     <div class="w-full p-3 bg-white ">
-      <table class="w-full table table-auto">
+      <table class="w-full table-stripped table table-auto">
 
         <tr class="text-left">
           <th class="p-3">Id</th>
@@ -122,11 +122,11 @@ const downloadQRCode = async (tricyle) => {
             <UProgress/>
           </td>
         </tr>
-        <tr v-for="tricycle in tricyles" :key="tricycle.id" class="text-left m-3 p-3">
-          <td class="p-3">{{ tricycle.id }}</td>
+        <tr v-for="tricycle, index in tricyles" :key="tricycle.id" class="text-left m-3 p-3 hover:bg-gray-100">
+          <td class="p-3">{{ index + 1}}</td>
           <td class="p-3">{{ tricycle.matricule}}</td>
           <td class="p-3">{{ tricycle.contact}}</td>
-          <td class="p-3">{{ tricycle.user}}</td>
+          <td class="p-3">{{ tricycle.nom}}</td>
           <td class="p-3 items-center space-x-3">
             <UButton @click="downloadQRCode(tricycle)"><UIcon name="i-lucide-qr-code"/></UButton>
             <DetailsPayment :tricycle />
