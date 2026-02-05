@@ -3,13 +3,13 @@
 </script>
 
 <template>
-<div class="w-full">
-  <i-menu-item label="Dashboard" badge="3" icon="i-lucide-home" link="/" />
-  <i-menu-item label="Utilisateurs" badge="" icon="i-lucide-user" link="/users" />
-  <i-menu-item label="Tricyles" badge="" icon="i-lucide-car-taxi-front" link="/tricyles" />
-  <i-menu-item label="Paiements" badge="" icon="i-lucide-circle-dollar-sign" link="/payments" />
-  <i-menu-item label="Paramètres" badge="" icon="i-lucide-settings" link="/settings" />
-</div>
+  <nav class="flex flex-col py-2">
+    <IMenuItem label="Tableau de Bord"  icon="i-lucide-layout-dashboard" link="/" />
+    <IMenuItem label="Utilisateurs" icon="i-lucide-users" link="/users" />
+    <IMenuItem label="Tricycles" icon="i-lucide-car-taxi-front" link="/tricyles" />
+    <IMenuItem label="Paiements" icon="i-lucide-banknote" link="/payments" />
+    <IMenuItem label="Paramètres" icon="i-lucide-settings-2" link="/settings" />
+  </nav>
 </template>
 
 <style scoped>

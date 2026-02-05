@@ -4,7 +4,7 @@ const pb = usePocketbase()
 const toast = useToast()
 
 const {status, data: scans, refresh, error} = await useAsyncData('scans', async() => await pb.collection('scans').getFullList({
-  expand: "users,car"
+  expand: "user,car"
 }))
 
 onMounted(async() => {

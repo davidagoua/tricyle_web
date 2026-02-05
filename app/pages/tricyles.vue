@@ -78,68 +78,82 @@ const downloadQRCode = async (tricyle) => {
 </script>
 
 <template>
-<NuxtLayout>
+  <NuxtLayout>
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-[#1d2327]">Liste des Tricycles</h1>
+        
+        <UModal v-model:open="openModal">
+          <UButton label="Ajouter un véhicule" icon="i-lucide-plus" color="info" />
 
-  <div class="card shadow">
-    <div class="flex justify-between p-3 bg-white">
-      <h2 class="text-2xl">Liste des tricyles</h2>
-      <UModal v-model:open="openModal" >
-        <UButton label="Ajouter" color="neutral" variant="subtle" />
+          <template #content>
+            <div class="p-4 bg-white border">
+              <h3 class="text-lg font-semibold mb-4 border-b pb-2">Ajouter un nouveau tricycle</h3>
+              <form @submit.prevent="createTricyle" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="text-sm font-medium text-gray-700">Nom du propriétaire</label>
+                  <UInput v-model="newCar.nom" placeholder="Ex: Jean Dupont" class="w-full" />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-sm font-medium text-gray-700">Numéro de contact</label>
+                  <UInput v-model="newCar.contact" placeholder="Ex: 0700000000" class="w-full" />
+                </div>
+                <div class="space-y-1 md:col-span-2">
+                  <label class="text-sm font-medium text-gray-700">Matricule</label>
+                  <UInput v-model="newCar.matricule" placeholder="Ex: AA-123-BB" class="w-full" />
+                </div>
+                <div class="md:col-span-2 pt-2 border-t mt-2 flex justify-end space-x-2">
+                  <UButton variant="ghost" @click="openModal = false">Annuler</UButton>
+                  <UButton type="submit" color="info" :loading="loading">Enregistrer le tricycle</UButton>
+                </div>
+              </form>
+            </div>
+          </template>
+        </UModal>
+      </div>
 
-        <template #content>
-          <div class="p-3">
-            <form @submit.prevent="createTricyle" class="grid grid-cols-1 gap-x-2 md:grid-cols-2 gap-3">
-              <div class="mb-3">
-                <label for="">Nom</label><br>
-                <UInput v-model="newCar.nom" />
-              </div>
-              <div class="mb-3">
-                <label for="">Contact</label><br>
-                <UInput class="w-full" v-model="newCar.contact" />
-              </div>
-              <div class="mb-3 col-span-2">
-                <label for="">Matricule</label><br>
-                <UInput v-model="newCar.matricule" class=" w-full" />
-              </div>
-              <UButton type="submit">Enregistrer</UButton>
-            </form>
-          </div>
-        </template>
-      </UModal>
+      <div class="bg-white border border-[#dcdcde] shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50 text-left">
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Rang</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Matricule</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Propriétaire</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+              <tr v-show="loading">
+                <td colspan="5" class="p-4">
+                  <UProgress />
+                </td>
+              </tr>
+              <tr v-for="(tricycle, index) in tricyles" :key="tricycle.id" class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3 text-sm text-gray-500">{{ index + 1 }}</td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ tricycle.matricule }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ tricycle.contact }}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ tricycle.nom }}</td>
+                <td class="px-4 py-3 text-sm text-right space-x-2">
+                  <UTooltip text="Télécharger QR Code">
+                    <UButton size="xs" variant="ghost" @click="downloadQRCode(tricycle)" icon="i-lucide-qr-code" color="neutral" />
+                  </UTooltip>
+                  <DetailsPayment :tricycle />
+                  <UButton size="xs" variant="ghost" color="error" icon="i-lucide-trash" />
+                </td>
+              </tr>
+              <tr v-if="tricyles.length === 0 && !loading">
+                <td colspan="5" class="px-4 py-8 text-center text-gray-500 text-sm italic">
+                  Aucun tricycle trouvé.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="w-full p-3 bg-white ">
-      <table class="w-full table-stripped table table-auto">
-
-        <tr class="text-left">
-          <th class="p-3">Id</th>
-          <th class="p-3">Matricule</th>
-          <th class="p-3">Contact</th>
-          <th class="p-3">Proprio</th>
-          <th class="p-3">Actions</th>
-        </tr>
-        <tr v-show="loading">
-          <td colspan="5">
-            <UProgress/>
-          </td>
-        </tr>
-        <tr v-for="tricycle, index in tricyles" :key="tricycle.id" class="text-left m-3 p-3 hover:bg-gray-100">
-          <td class="p-3">{{ index + 1}}</td>
-          <td class="p-3">{{ tricycle.matricule}}</td>
-          <td class="p-3">{{ tricycle.contact}}</td>
-          <td class="p-3">{{ tricycle.nom}}</td>
-          <td class="p-3 items-center space-x-3">
-            <UButton @click="downloadQRCode(tricycle)"><UIcon name="i-lucide-qr-code"/></UButton>
-            <DetailsPayment :tricycle />
-            <UButton color="error">
-              <UIcon name="i-lucide-trash"/>
-            </UButton>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-</NuxtLayout>
+  </NuxtLayout>
 </template>
 
 <style scoped>

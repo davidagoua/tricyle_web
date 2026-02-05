@@ -1,55 +1,55 @@
 <template>
   <NuxtLayout>
-    <div class="p-6 space-y-8">
-
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-[#1d2327]">Tableau de Bord</h1>
+      </div>
 
       <!-- KPIs Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <DashboardKPICard name="Tricycles" :value="stats.tricycles" />
-
         <DashboardKPICard name="Agents" :value="stats.agents" />
         <DashboardKPICard name="Paiements" :value="stats.paiements" />
         <DashboardKPICard name="Montant Total" :value="formatFcfa(stats.totalMontant)" />
-
-
-
       </div>
 
       <!-- Paiement par semaine -->
-      <div class=" grid grid-cols-2 gap-4">
-        <div class="bg-white rounded shadow p-4">
-          <h2 class="text-lg font-semibold mb-2">Montants par semaine</h2>
-          <ul>
-            <li v-for="(amount, week) in stats.montantParSemaine" :key="week">
-              <span class="font-medium">Semaine {{ week }}-{{ (new Date()).getFullYear()}} :</span> {{ formatFcfa(amount) }}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white border border-[#dcdcde] shadow-sm p-5">
+          <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Montants par semaine</h2>
+          <ul class="divide-y divide-gray-100">
+            <li v-for="(amount, week) in stats.montantParSemaine" :key="week" class="py-2 flex justify-between">
+              <span class="text-gray-600">Semaine {{ week }}-{{ (new Date()).getFullYear()}}</span>
+              <span class="font-semibold text-gray-900">{{ formatFcfa(amount) }}</span>
             </li>
           </ul>
         </div>
-        <div class="bg-white rounded shadow p-4">
-          <h2 class="text-lg font-semibold mb-2">Montants encaissé</h2>
-          <ul>
-            <li v-for="(amount, week) in stats.montantParSemaine" :key="week">
-              <span class="font-medium">Semaine {{ week }}-{{ (new Date()).getFullYear()}} :</span> {{ formatFcfa(stats.totalMontantwithDrawed) }}
-            </li>
-          </ul>
+        <div class="bg-white border border-[#dcdcde] shadow-sm p-5">
+          <h2 class="text-lg font-semibold mb-4 text-gray-700 border-b pb-2">Récapitulatif Encaissements</h2>
+          <div class="space-y-4 text-center py-4">
+            <p class="text-sm text-gray-500 uppercase">Total encaissé</p>
+            <p class="text-4xl font-bold text-green-600">{{ formatFcfa(stats.totalMontantwithDrawed) }}</p>
+          </div>
         </div>
       </div>
 
       <!-- Tableau somme par utilisateur -->
-      <div class="bg-white rounded shadow p-4">
-        <h2 class="text-lg font-semibold mb-4">Montant total par agent</h2>
-        <table class="min-w-full border">
+      <div class="bg-white border border-[#dcdcde] shadow-sm">
+        <div class="p-4 border-b">
+          <h2 class="text-lg font-semibold text-gray-700">Montant total par agent</h2>
+        </div>
+        <table class="min-w-full">
           <thead>
-          <tr class="bg-gray-100">
-            <th class="p-2 text-left">Agent</th>
-            <th class="p-2 text-left">Montant total</th>
-          </tr>
+            <tr class="bg-gray-50 text-left border-b">
+              <th class="p-4 text-sm font-semibold text-gray-600">Agent</th>
+              <th class="p-4 text-sm font-semibold text-gray-600">Montant total</th>
+            </tr>
           </thead>
-          <tbody>
-          <tr v-for="user in stats.parUser" :key="user.name">
-            <td class="p-2">{{ user.name }}</td>
-            <td class="p-2">{{ formatFcfa(user.total) }}</td>
-          </tr>
+          <tbody class="divide-y">
+            <tr v-for="user in stats.parUser" :key="user.name" class="hover:bg-gray-50 transition-colors">
+              <td class="p-4 text-sm text-gray-700">{{ user.name }}</td>
+              <td class="p-4 text-sm font-medium text-gray-900">{{ formatFcfa(user.total) }}</td>
+            </tr>
           </tbody>
         </table>
       </div>

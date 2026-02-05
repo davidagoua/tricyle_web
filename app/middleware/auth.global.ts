@@ -1,11 +1,14 @@
-
-
-export default defineNuxtRouteMiddleware((to, from) => {
+export default defineNuxtRouteMiddleware((to) => {
+    if (process.server) return
     const pb = usePocketbase()
-    //console.log(pb)
-    return true
-    // Vérifie si la route a besoin d'authentification
-    if (to.path !== '/login' && ! pb.authStore.isValid) {
+
+    // Redirect to login if trying to access a protected page without being authenticated
+    if (to.path !== '/login' && !pb.authStore.isValid) {
         return navigateTo('/login')
+    }
+
+    // Redirect to home if trying to access login page while already authenticated
+    if (to.path === '/login' && pb.authStore.isValid) {
+        return navigateTo('/')
     }
 })

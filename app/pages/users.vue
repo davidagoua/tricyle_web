@@ -56,56 +56,88 @@ const deleteUser = async(userId: string) => {
 </script>
 
 <template>
-<NuxtLayout>
-  <div class="flex justify-between items-center mb-3">
-    <h2 class="text-2xl font-bold">Liste des utilisateurs</h2>
-    <UModal v-model:open="openModal" >
-      <UButton label="Ajouter" color="neutral" variant="subtle" />
+  <NuxtLayout>
+    <div class="space-y-6">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-semibold text-[#1d2327]">Utilisateurs</h1>
+        
+        <UModal v-model:open="openModal">
+          <UButton label="Ajouter un utilisateur" icon="i-lucide-user-plus" color="info" />
 
-      <template #content>
-        <div class="p-3 ">
-          <form @submit.prevent="createUser" class="grid grid-cols-1 gap-x-2 md:grid-cols-2 gap-3">
-            <div class="mb-3">
-              <label for="">Pseudo</label><br>
-              <UInput v-model="newUser.pseudo" type="text" name="pseudo" placeholder="Pseudo" />
+          <template #content>
+            <div class="p-4 bg-white border">
+              <h3 class="text-lg font-semibold mb-4 border-b pb-2">Créer un nouvel utilisateur</h3>
+              <form @submit.prevent="createUser" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                  <label class="text-sm font-medium text-gray-700">Pseudo</label>
+                  <UInput v-model="newUser.pseudo" placeholder="Ex: jdoe" class="w-full" />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-sm font-medium text-gray-700">Nom Complet</label>
+                  <UInput v-model="newUser.name" placeholder="Ex: Jean Doe" class="w-full" />
+                </div>
+                <div class="space-y-1 md:col-span-2">
+                  <label class="text-sm font-medium text-gray-700">Mot de passe</label>
+                  <UInput 
+                    v-model="newUser.password" 
+                    :type="showPassword ? 'text' : 'password'" 
+                    placeholder="••••••••" 
+                    class="w-full"
+                    :ui="{ trailing: 'pe-1' }"
+                  >
+                    <template #trailing>
+                      <UButton 
+                        variant="ghost" 
+                        color="neutral" 
+                        size="xs" 
+                        :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" 
+                        @click="showPassword = !showPassword" 
+                      />
+                    </template>
+                  </UInput>
+                </div>
+                <div class="md:col-span-2 pt-2 border-t mt-2 flex justify-end space-x-2">
+                  <UButton variant="ghost" @click="openModal = false">Annuler</UButton>
+                  <UButton type="submit" color="info">Enregistrer l'utilisateur</UButton>
+                </div>
+              </form>
             </div>
-            <div class="mb-3">
-              <label for="">Nom</label><br>
-              <UInput class="w-full" v-model="newUser.name" type="text" name="name" placeholder="Nom" />
-            </div>
-            <div class="mb-3 col-span-2">
-              <label for="">Mot de passe</label><br>
-              <UInput :ui="{ trailing: 'pe-1' }" v-model="newUser.password" class=" w-full" :type="showPassword ? 'text' : 'password'" name="password" placeholder="Mot de passe" >
-                <template #trailing>
-                  <UIcon @click="showPassword = ! showPassword" :name=" !showPassword ? 'i-lucide-eye' : 'i-lucide-eye-off'"  />
-                </template>
-              </UInput>
-            </div>
-            <UButton type="submit">Enregistrer</UButton>
-          </form>
+          </template>
+        </UModal>
+      </div>
+
+      <div class="bg-white border border-[#dcdcde] shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50 text-left">
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Pseudo / Email</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Nom</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Rôle</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+              <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50 transition-colors">
+                <td class="px-4 py-3">
+                  <div class="text-sm font-medium text-wp-sidebar-highlight">{{ user.pseudo || user.email.split('@')[0] }}</div>
+                  <div class="text-xs text-gray-500">{{ user.email }}</div>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-700">{{ user.name }}</td>
+                <td class="px-4 py-3">
+                  <UBadge size="xs" color="neutral" variant="subtle" class="capitalize">{{ user.role }}</UBadge>
+                </td>
+                <td class="px-4 py-3 text-sm text-right space-x-2">
+                  <UButton size="xs" variant="ghost" color="neutral" icon="i-lucide-pencil" />
+                  <UButton size="xs" variant="ghost" color="error" icon="i-lucide-trash" @click="deleteUser(user.id)" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      </template>
-    </UModal>
-  </div>
-  <div>
-    <div class="grid bg-gray-300 p-3 grid-cols-5 mb-4 gap-4">
-      <div>ID</div>
-      <div>EMAIL</div>
-      <div>NOM</div>
-      <div>ROLE</div>
-    </div>
-    <div v-for="user in users" :key="user.id"  class="grid hover:bg-gray-50 grid-cols-5 p-3 gap-4">
-      <div>{{user.id}}</div>
-      <div>{{user.email}}</div>
-      <div>{{user.name}}</div>
-      <div>{{user.role}}</div>
-      <div>
-        <UButton label="Modifier" color="neutral" variant="subtle" />
-        <UButton @click="deleteUser(user.id)" label="Supprimer" color="error"  />
       </div>
     </div>
-  </div>
-</NuxtLayout>
+  </NuxtLayout>
 </template>
 
 <style scoped>

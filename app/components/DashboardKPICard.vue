@@ -9,9 +9,9 @@ const {name, value}: Props = defineProps<Props>()
 </script>
 
 <template>
-  <div class="bg-blue-900 text-white shadow rounded p-4">
-    <h3 class="text-sm ">{{ name }}</h3>
-    <p class="text-2xl font-semibold">{{ value }}</p>
+  <div class="bg-white border border-[#dcdcde] shadow-sm p-4 hover:shadow-md transition-shadow">
+    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">{{ name }}</h3>
+    <p class="text-3xl font-bold text-gray-800 mt-1">{{ value }}</p>
   </div>
 </template>
 
