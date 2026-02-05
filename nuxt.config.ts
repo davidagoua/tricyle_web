@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-16',
   runtimeConfig: {
     public: {
-      pocketbaseUrl: 'http://147.79.115.114:8090', // ou ton URL distante
+      pocketbaseUrl: 'http://songon.space:8090', // ou ton URL distante
     },
   },
 })
