@@ -8,36 +8,153 @@ const paymentsFIltered = computed(()=>{
   return payments.value
 })
 
+const isScanSectionOpen = ref(false)
+
 const onpenAddModal = ref(false)
 
 onMounted(async()=>{
   payments.value = await pb.collection('payments').getFullList({
-    expand: 'user.name,car.matricule',
+    expand: 'user,car',
   });
   console.log(payments);
   pb.collection('payments').subscribe('*', function (e) {
-    console.log(e.action);
-    console.log(e.record);
-
     if(e.action === 'create'){
       payments.value.push(e.record);
       toast.add({
         title: 'Nouveau paiement',
         description: `Paiement effectué: ${e.record.amount} FCFA`,
       })
-
     }
-
   });
-
 })
-
 
 const withdraw = async(payment) => {
   payment.withdrawed = true
   await pb.collection('payments').update(payment.id, payment)
+  toast.add({ title: 'Succès', description: 'Paiement encaissé' })
 }
 
+const withdrawAllForAgent = async(agentId: string) => {
+  const pendingPayments = payments.value.filter(p => p.user === agentId && !p.withdrawed)
+  
+  if (pendingPayments.length === 0) return
+  
+  try {
+    const promises = pendingPayments.map(p => {
+      const updated = { ...p, withdrawed: true }
+      return pb.collection('payments').update(p.id, updated)
+    })
+    
+    await Promise.all(promises)
+    
+    // Update local state for immediate feedback
+    pendingPayments.forEach(p => p.withdrawed = true)
+    
+    toast.add({ 
+      title: 'Succès', 
+      description: `${pendingPayments.length} paiements encaissés pour cet agent` 
+    })
+  } catch (error) {
+    toast.add({ 
+      title: 'Erreur', 
+      description: 'Certains paiements n\'ont pas pu être encaissés',
+      color: 'error'
+    })
+  }
+}
+
+const activeTabIndex = ref('summary')
+const tabs = [
+  { value: 'summary', label: 'Cumul par Agent', icon: 'i-lucide-users', slot: 'summary' },
+  { value: 'history', label: 'Historique des paiements', icon: 'i-lucide-history', slot: 'history' },
+]
+
+const isMapModalOpen = ref(false)
+const selectedPaymentPoint = ref({ lat: 0, lon: 0 })
+
+const openMapModal = (payment: any) => {
+  if (payment.point) {
+    selectedPaymentPoint.value = payment.point
+    isMapModalOpen.value = true
+  }
+}
+
+const exportToPDF = async () => {
+  const { jsPDF } = await import('jspdf')
+  const doc = new jsPDF()
+  
+  const now = new Date().toLocaleDateString('fr-FR')
+  doc.setFontSize(20)
+  doc.text('Rapport des Paiements', 105, 15, { align: 'center' })
+  doc.setFontSize(10)
+  doc.text(`Généré le: ${now}`, 105, 22, { align: 'center' })
+
+  if (activeTabIndex.value === 'summary') {
+    // Agent Summary Export
+    doc.setFontSize(14)
+    doc.text('Cumul des paiements par Agent (En attente)', 10, 35)
+    
+    let y = 45
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Agent', 10, y)
+    doc.text('Nombre', 100, y)
+    doc.text('Total Cumulé', 150, y)
+    
+    doc.setFont('helvetica', 'normal')
+    y += 10
+    
+    const summary = {}
+    payments.value.forEach(payment => {
+      if (!payment.withdrawed) {
+        const agentId = payment.user
+        const agentName = payment.expand?.user?.name || 'Inconnu'
+        if (!summary[agentId]) summary[agentId] = { name: agentName, count: 0, total: 0 }
+        summary[agentId].count++
+        summary[agentId].total += payment.amount || 0
+      }
+    })
+
+    Object.values(summary).forEach((agent: any) => {
+      if (y > 280) { doc.addPage(); y = 20 }
+      doc.text(agent.name, 10, y)
+      doc.text(agent.count.toString(), 100, y)
+      doc.text(new Intl.NumberFormat('fr-FR').format(agent.total) + ' FCFA', 150, y)
+      y += 8
+    })
+  } else {
+    // History Export
+    doc.setFontSize(14)
+    doc.text('Historique complet des transactions', 10, 35)
+    
+    let y = 45
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Tricycle', 10, y)
+    doc.text('Agent', 40, y)
+    doc.text('Date', 90, y)
+    doc.text('S.', 120, y)
+    doc.text('Montant', 135, y)
+    doc.text('Statut', 170, y)
+    
+    doc.setFont('helvetica', 'normal')
+    y += 8
+    
+    payments.value.forEach(payment => {
+      if (y > 280) { doc.addPage(); y = 20 }
+      doc.text(payment.expand?.car?.matricule || 'N/A', 10, y)
+      doc.text(payment.expand?.user?.name || 'N/A', 40, y)
+      doc.text(new Date(payment.created).toLocaleDateString('fr-FR'), 90, y)
+      doc.text(payment.numero_semaine?.toString() || '', 120, y)
+      doc.text(new Intl.NumberFormat('fr-FR').format(payment.amount || 0) + ' FCFA', 135, y)
+      doc.text(payment.withdrawed ? 'Encaissé' : 'En attente', 170, y)
+      y += 7
+    })
+  }
+  
+  doc.save(`rapport_paiements_${new Date().getTime()}.pdf`)
+  toast.add({ title: 'Succès', description: 'PDF généré avec succès' })
+}
 </script>
 
 <template>
@@ -47,76 +164,55 @@ const withdraw = async(payment) => {
         <h1 class="text-2xl font-semibold text-[#1d2327]">Gestion des Paiements</h1>
       </div>
 
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Scan Section -->
-        <div class="lg:w-1/3 shrink-0">
-          <div class="bg-white border border-[#dcdcde] shadow-sm">
-            <div class="p-4 border-b bg-gray-50">
-              <h2 class="text-sm font-semibold text-gray-700 uppercase">Scanner un QR Code</h2>
+      <UModal v-model:open="isScanSectionOpen">
+        <template #content>
+          <div class="bg-white border shadow-sm">
+            <div 
+              class="p-4 border-b bg-gray-50 flex justify-between items-center"
+            >
+              <h2 class="text-sm font-semibold text-gray-700 uppercase">Scans sans paiement</h2>
+              <UButton 
+                variant="ghost" 
+                color="neutral" 
+                icon="i-lucide-x" 
+                @click="isScanSectionOpen = false" 
+              />
             </div>
             <div class="p-1">
               <ScanList />
             </div>
           </div>
-        </div>
+        </template>
+      </UModal>
 
-        <!-- Payments Table Section -->
-        <div class="flex-1">
-          <div class="bg-white border border-[#dcdcde] shadow-sm">
-            <div class="p-4 border-b flex justify-between items-center">
-              <h2 class="text-lg font-semibold text-gray-700">Historique des transactions</h2>
-              <UButton label="Exporter" icon="i-lucide-download" variant="ghost" size="xs" color="neutral" />
-            </div>
-            
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr class="bg-gray-50 text-left">
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Montant</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Agent</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">Semaine</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-center">Statut</th>
-                    <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
-                  <tr v-for="payment in paymentsFIltered" :key="payment.id" class="hover:bg-gray-50 transition-colors">
-                    <td class="px-4 py-3 text-sm font-bold text-gray-900">{{ payment.amount }} FCFA</td>
-                    <td class="px-4 py-3 text-sm text-gray-700">{{ payment.name }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-500">{{ new Date(payment.created).toLocaleDateString('fr-FR') }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600 text-center">{{ payment.numero_semaine }}</td>
-                    <td class="px-4 py-3 text-center">
-                      <UBadge v-if="payment.withdrawed" color="success" variant="subtle" size="xs">
-                        <UIcon name="i-lucide-check-circle-2" class="mr-1" /> Encaissé
-                      </UBadge>
-                      <UBadge v-else color="warning" variant="subtle" size="xs">
-                        <UIcon name="i-lucide-clock" class="mr-1" /> En attente
-                      </UBadge>
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                      <UButton 
-                        v-if="!payment.withdrawed" 
-                        @click="withdraw(payment)" 
-                        label="Encaisser" 
-                        size="xs" 
-                        color="info" 
-                        variant="soft"
-                        icon="i-lucide-banknote"
-                      />
-                    </td>
-                  </tr>
-                  <tr v-if="paymentsFIltered.length === 0">
-                    <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm italic">
-                      Aucun paiement enregistré pour le moment.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+      <div class="bg-white border border-[#dcdcde] shadow-sm overflow-hidden">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50/50">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-wallet" class="w-5 h-5 text-wp-sidebar-highlight" />
+            <h2 class="text-lg font-semibold text-gray-700">Flux de Trésorerie</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <UButton label="Exporter" icon="i-lucide-download" variant="ghost" size="xs" color="neutral" @click="exportToPDF" />
+            <UButton variant="outline" color="neutral" icon="i-lucide-qr-code" @click="isScanSectionOpen = true" label="Scans sans paiement" />
           </div>
         </div>
+        
+        <UTabs v-model="activeTabIndex" :items="tabs" class="w-full">
+          <template #history>
+            <PaymentHistoryTable :payments="paymentsFIltered" @withdraw="withdraw" @show-map="openMapModal" />
+          </template>
+          
+          <template #summary>
+            <AgentSummaryTable :payments="payments" @withdraw-all="withdrawAllForAgent" />
+          </template>
+        </UTabs>
       </div>
+
+      <PaymentMapModal 
+        :is-open="isMapModalOpen" 
+        :point="selectedPaymentPoint" 
+        @close="isMapModalOpen = false" 
+      />
     </div>
   </NuxtLayout>
 </template>

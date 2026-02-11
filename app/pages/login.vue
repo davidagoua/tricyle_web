@@ -3,6 +3,7 @@ const pb = usePocketbase()
 const toast = useToast()
 
 const loading = ref(false)
+const error = ref(null)
 
 const loginForm = ref({
   email: "",
@@ -15,17 +16,19 @@ const login = async () => {
     if (pb.authStore.isValid) {
       navigateTo("/")
     }else{
+      error.value = "Email ou Mot de passe incorrect"
       toast.add({
         color: 'error',
         title: "Login failed",
-        description: "Email ou Mot de passe incorrect"
+        description: error.value
       })
     }
   }catch(error){
     console.log(error)
+    error.value = error
     toast.add({
       title: "Error",
-      description: error,
+      description: error.value,
     })
   }
   finally{
@@ -39,10 +42,13 @@ const login = async () => {
     <div class="w-full max-w-sm">
       <div class="text-center mb-6">
         <UIcon name="i-lucide-car-taxi-front" class="w-12 h-12 text-wp-sidebar-highlight mx-auto mb-2" />
-        <h1 class="text-xl font-bold text-[#1d2327]">Tricycle CMS</h1>
+        <h1 class="text-xl font-bold text-[#1d2327]">Tricycle Management</h1>
       </div>
       
       <div class="bg-white border border-[#dcdcde] shadow-sm p-6">
+        <div v-if="error" class="mb-4 border border-red-500 bg-red-50 pb-2">
+          <UAlert color="danger" :title="error" />
+        </div>
         <form @submit.prevent="login" class="space-y-4">
           <div class="space-y-1">
             <label class="text-sm font-medium text-gray-700">Identifiant ou E-mail</label>

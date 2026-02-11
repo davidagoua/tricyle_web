@@ -7,7 +7,17 @@ const pb = usePocketbase();
 const toast = useToast()
 const openModal = ref(false)
 const tricyles = ref([])
-const tricylesFiltered = computed(()=> tricyles.value)
+const search = ref('')
+const tricylesFiltered = computed(() => {
+  if (!search.value) return tricyles.value
+  const query = search.value.toLowerCase()
+  return tricyles.value.filter(t => 
+    t.matricule?.toLowerCase().includes(query) ||
+    t.nom?.toLowerCase().includes(query) ||
+    t.contact?.toLowerCase().includes(query)
+  )
+})
+
 const loading = ref(false)
 
 onMounted(async() => {
@@ -83,33 +93,42 @@ const downloadQRCode = async (tricyle) => {
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold text-[#1d2327]">Liste des Tricycles</h1>
         
-        <UModal v-model:open="openModal">
-          <UButton label="Ajouter un véhicule" icon="i-lucide-plus" color="info" />
+        <div class="flex items-center gap-4">
+          <UInput 
+            v-model="search" 
+            placeholder="Rechercher par matricule, nom..." 
+            icon="i-lucide-search" 
+            class="w-64"
+          />
+          
+          <UModal v-model:open="openModal">
+            <UButton label="Ajouter un véhicule" icon="i-lucide-plus" color="info" />
 
-          <template #content>
-            <div class="p-4 bg-white border">
-              <h3 class="text-lg font-semibold mb-4 border-b pb-2">Ajouter un nouveau tricycle</h3>
-              <form @submit.prevent="createTricyle" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-1">
-                  <label class="text-sm font-medium text-gray-700">Nom du propriétaire</label>
-                  <UInput v-model="newCar.nom" placeholder="Ex: Jean Dupont" class="w-full" />
-                </div>
-                <div class="space-y-1">
-                  <label class="text-sm font-medium text-gray-700">Numéro de contact</label>
-                  <UInput v-model="newCar.contact" placeholder="Ex: 0700000000" class="w-full" />
-                </div>
-                <div class="space-y-1 md:col-span-2">
-                  <label class="text-sm font-medium text-gray-700">Matricule</label>
-                  <UInput v-model="newCar.matricule" placeholder="Ex: AA-123-BB" class="w-full" />
-                </div>
-                <div class="md:col-span-2 pt-2 border-t mt-2 flex justify-end space-x-2">
-                  <UButton variant="ghost" @click="openModal = false">Annuler</UButton>
-                  <UButton type="submit" color="info" :loading="loading">Enregistrer le tricycle</UButton>
-                </div>
-              </form>
-            </div>
-          </template>
-        </UModal>
+            <template #content>
+              <div class="p-4 bg-white border">
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Ajouter un nouveau tricycle</h3>
+                <form @submit.prevent="createTricyle" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-700">Nom du propriétaire</label>
+                    <UInput v-model="newCar.nom" placeholder="Ex: Jean Dupont" class="w-full" />
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-700">Numéro de contact</label>
+                    <UInput v-model="newCar.contact" placeholder="Ex: 0700000000" class="w-full" />
+                  </div>
+                  <div class="space-y-1 md:col-span-2">
+                    <label class="text-sm font-medium text-gray-700">Matricule</label>
+                    <UInput v-model="newCar.matricule" placeholder="Ex: AA-123-BB" class="w-full" />
+                  </div>
+                  <div class="md:col-span-2 pt-2 border-t mt-2 flex justify-end space-x-2">
+                    <UButton variant="ghost" @click="openModal = false">Annuler</UButton>
+                    <UButton type="submit" color="info" :loading="loading">Enregistrer le tricycle</UButton>
+                  </div>
+                </form>
+              </div>
+            </template>
+          </UModal>
+        </div>
       </div>
 
       <div class="bg-white border border-[#dcdcde] shadow-sm">
@@ -130,7 +149,7 @@ const downloadQRCode = async (tricyle) => {
                   <UProgress />
                 </td>
               </tr>
-              <tr v-for="(tricycle, index) in tricyles" :key="tricycle.id" class="hover:bg-gray-50 transition-colors">
+              <tr v-for="(tricycle, index) in tricylesFiltered" :key="tricycle.id" class="hover:bg-gray-50 transition-colors">
                 <td class="px-4 py-3 text-sm text-gray-500">{{ index + 1 }}</td>
                 <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ tricycle.matricule }}</td>
                 <td class="px-4 py-3 text-sm text-gray-700">{{ tricycle.contact }}</td>
@@ -143,7 +162,7 @@ const downloadQRCode = async (tricyle) => {
                   <UButton size="xs" variant="ghost" color="error" icon="i-lucide-trash" />
                 </td>
               </tr>
-              <tr v-if="tricyles.length === 0 && !loading">
+              <tr v-if="tricylesFiltered.length === 0 && !loading">
                 <td colspan="5" class="px-4 py-8 text-center text-gray-500 text-sm italic">
                   Aucun tricycle trouvé.
                 </td>

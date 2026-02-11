@@ -27,15 +27,12 @@ onMounted(async() => {
 
 <template>
 <div class="">
-  <div class="p-3 border-b-gray-300 border-b">
-    <h2 class="text-center text-sm items-center space-x-1"><UIcon name="i-lucide-cloud-alert"/> Scans sans paiements <UBadge :label="scans?.length ?? 0" /></h2>
-  </div>
-  <div v-for="scan in scans" :key="scan.id" class="flex p-3 hover:bg-gray-100 items-center space-x-3">
+  <div v-for="scan in scans" :key="scan.id" class="flex  hover:bg-gray-100 items-center space-x-3">
     <UIcon class="text-red-500" name="i-lucide-cloud-alert" />
     <div>
-      <h2>{{scan.expand.car?.matricule}}</h2>
-      <small class="text-xs text-gray-500">{{ scan.created}}</small> <br>
-      <small class="text-xs text-gray-500">Scanner par: {{ scan.expand.user?.name}}</small>
+      <h2>{{scan.expand.car?.matricule}} - <small class="text-xs text-gray-500">{{ scan.created}}</small> <br></h2>
+      
+      <small class="text-xs font-semibold text-gray-500">{{ scan.expand.user?.name}}</small>
     </div>
   </div>
 </div>

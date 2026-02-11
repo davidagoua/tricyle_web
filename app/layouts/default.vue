@@ -44,5 +44,7 @@ const logout = () => {
 </template>
 
 <style scoped>
-
+body{
+  font-family: 'montserrat', sans-serif;
+}
 </style>

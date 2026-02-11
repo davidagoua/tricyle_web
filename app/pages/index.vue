@@ -46,7 +46,7 @@
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr v-for="user in stats.parUser" :key="user.name" class="hover:bg-gray-50 transition-colors">
+            <tr v-for="user in stats.parUser" :key="user.id" class="hover:bg-gray-50 transition-colors">
               <td class="p-4 text-sm text-gray-700">{{ user.name }}</td>
               <td class="p-4 text-sm font-medium text-gray-900">{{ formatFcfa(user.total) }}</td>
             </tr>
